@@ -36,6 +36,7 @@ public class BlockingQueueTest
          };
          
          new Thread(enumerator).start();
+         
          for (int i = 1; i <= SEARCH_THREADS; i++) {
             Runnable searcher = () -> {
                try
@@ -60,6 +61,7 @@ public class BlockingQueueTest
                {
                }               
             };
+            
             new Thread(searcher).start();
          }
       }

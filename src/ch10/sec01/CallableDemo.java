@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CallableDemo {
+	
     public static long occurrences(String word, Path path) {
         try {
             String contents = new String(Files.readAllBytes(path),
@@ -42,21 +43,42 @@ public class CallableDemo {
         String word = "String";
         Set<Path> paths = descendants(Paths.get("."));
         List<Callable<Long>> tasks = new ArrayList<>();
+        
         for (Path p : paths) tasks.add(
             () -> { return occurrences(word, p); });
+        
         int processors = Runtime.getRuntime().availableProcessors();
         ExecutorService executor = Executors.newFixedThreadPool(processors);
         List<Future<Long>> results = executor.invokeAll(tasks);
         long total = 0;
+        
         for (Future<Long> result : results) total += result.get();
         System.out.println("Occurrences of String: " + total);
         
-        String searchWord = "occurrences";
+        
+        String searchWord = word;
         List<Callable<Path>> searchTasks = new ArrayList<>();
+        
         for (Path p : paths) searchTasks.add(
             () -> { if (occurrences(searchWord, p) > 0) return p; else throw new RuntimeException(); });
+        
         Path found = executor.invokeAny(searchTasks);
+        List<Future<Path>> founds = executor.invokeAll(searchTasks);
+        
         System.out.println(found);
+        System.out.println(founds);
+        
+        for(Future<Path> f : founds){
+            try {
+                System.out.println(f.get());
+            } catch (InterruptedException | ExecutionException e) {
+//                e.printStackTrace();
+            	System.out.println("error");
+            }
+        }
+        
+//        System.out.println(founds.get(1).get());
+        
         executor.shutdown();
     }
 }
